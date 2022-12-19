@@ -1,0 +1,18 @@
+{
+  "name": "watch2gether",
+  "version": "1.0.0",
+  "description": "watch movies with your friends",
+  "main": "app.js",
+  "scripts": {
+    "test": "test",
+    "start": "node app.js"
+  },
+  "author": "cravo",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.1",
+    "crypto": "^1.0.1",
+    "ejs": "^3.1.6",
+    "express": "^4.17.1"
+  }
+}

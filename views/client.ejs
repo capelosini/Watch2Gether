@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Watch 2 Gether</title>
+</head>
+<body>
+    <%- include('nav'); %>
+    <h3>Watching <span id="watchingurl"><%= room.url %></span></h3>
+    <video src="<%= room.url %>" controls></video>
+    <script>
+        alert("Click on the screen to start sync")
+        var count = 0
+        var countNew = 0
+        setInterval(() => {
+            fetch("/refresh?room=<%= room.invite %>")
+                .then(res => res.json())
+                .then(data => {
+                    count = data.length
+                    if (count != countNew){
+                        countNew=count
+                        var event = data[data.length - 1].event
+                        var time = data[data.length - 1].time
+                        if (event == "play"){
+                            document.querySelector("video").play()
+                            document.querySelector("video").currentTime = time
+                        }
+                        else if (event == "pause"){
+                            document.querySelector("video").pause()
+                            document.querySelector("video").currentTime = time
+                        }
+                        else if (event == "ended"){
+                            alert("Host disconnected")
+                            window.location.href = "/"
+                        } else if (event == "changedurl"){
+                            var url = data[data.length - 1].url
+                            document.getElementById("watchingurl").innerText = url
+                            document.querySelector("video").src = url
+                        }
+                    }
+                });
+        }, 400);
+    </script>
+</body>
+</html>

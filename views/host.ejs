@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Watch 2 Gether</title>
+</head>
+<body>
+    <%- include('nav'); %>
+    <h3>Invite to friends: <code style="background-color: white; color: black;"> <span id="baseurl"> </span>join?room=<%= room.invite %></code></h3>
+    <video src="<%= room.url %>" controls></video>
+    <form>
+        <button type="button" id="changevideourl">Change video url</button>
+        <button type="button" id="deletethisok">Delete Room</button>
+    </form>
+    <script>
+        var baseurl = document.getElementById('baseurl');
+        baseurl.innerText = "https://"+window.location.hostname+"/"
+        const token = "<%= room.hostToken %>";
+
+        var video = document.querySelector('video')
+        video.onplay = () => {
+            fetch("/refresh?room=<%= room.invite %>", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    event: "play",
+                    time: video.currentTime,
+                    token: token
+                })
+            })
+        }
+        video.onpause = () => {
+            fetch("/refresh?room=<%= room.invite %>", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    event: "pause",
+                    time: video.currentTime,
+                    token: token
+                })
+            })
+        }
+        document.getElementById("changevideourl").addEventListener("click", () => {
+            var url = prompt("Put here your url")
+            if(url.split("http://").length > 1 || url.split("https://").length > 1){
+                fetch("/refresh?room=<%= room.invite %>", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        event: "changedurl",
+                        time: video.currentTime,
+                        token: token,
+                        url: url
+                    })
+                })
+                video.src = url
+            } else{
+                alert("Please put a valid url")
+            }
+        })
+        document.getElementById("deletethisok").addEventListener("click", function(event) {
+            fetch("/refresh?room=<%= room.invite %>", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    event: "ended",
+                    time: video.currentTime,
+                    token: token
+                })
+            })
+            fetch("/refresh?room=<%= room.invite %>", {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    token: token
+                })
+            }).then(function(res) {
+                res.text().then(text => {
+                    if(text == "success"){
+                        window.location.href = "/"
+                    } else{
+                        alert("Not possible to delete this room")
+                    }
+                })
+            })
+        })
+    </script>
+</body>
+</html>
